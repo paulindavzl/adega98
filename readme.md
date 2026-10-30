@@ -1,1 +1,2 @@
-# Gerenciador de estoque e clientes para a *Adega98*
+# Adega98
+Gerenciador de **estoque**, **clientes** e **pedidos** da <h2>Adega98</h2>

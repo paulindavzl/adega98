@@ -1,0 +1,37 @@
+[project]
+name = "adega98"
+version = "0.1.0"
+description = "gerenciador local Adega 98"
+authors = [
+    {name = "paulindavzl",email = "paulochz01@gmail.com"}
+]
+license = {text = "UNLICENSED"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi (>=0.161.1,<0.162.0)",
+    "uvicorn (>=0.54.0,<0.55.0)",
+    "sqlalchemy[asyncio] (>=2.1.6,<3.0.0)",
+    "aiosqlite (>=0.22.1,<0.23.0)",
+    "python-dotenv (>=1.2.4,<2.0.0)",
+    "jinja2 (>=3.1.6,<4.0.0)",
+    "python-multipart (>=0.0.32,<0.0.33)",
+    "pytest (>=9.2.0,<10.0.0)",
+    "pytest-asyncio (>=1.4.1,<2.0.0)",
+]
+
+
+[tool.poetry.scripts]
+app="app:run"
+dev_app="dev_app:run"
+
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+asyncio_default_test_loop_scope = "function"
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
