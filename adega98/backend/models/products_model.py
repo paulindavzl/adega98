@@ -39,8 +39,8 @@ class Product(Base):
     image: Mapped[str] = mapped_column(String(255), nullable=False, default="/images/unknown-product.png")
     created_by: Mapped[str] = mapped_column(ForeignKey("users.user_id"), nullable=False)
 
-    stock: ClassVar[Stock] = None
-    user: ClassVar[User] = None
+    stock: ClassVar[None|Stock] = None
+    user: ClassVar[None|User] = None
 
 
     # cria um novo produto
@@ -59,7 +59,7 @@ class Product(Base):
                 minimum_stock=minimum_stock,
                 maximum_stock=maximum_stock,
                 last_update_by=self.created_by
-            ).new()
+            ).new(self)
 
             db.add(stock)
 
@@ -121,7 +121,7 @@ class Product(Base):
     # obtém o usuário e o estoque
     async def _set_stock_user(self):
         self.stock, self.user = (
-            await Stock.get_by_id(self.product_id),
+            await Stock.get_by_id(self.product_id, self),
             await User.get_by_id(self.created_by)
         )
         return self

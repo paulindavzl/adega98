@@ -1,42 +1,12 @@
 import pytest
-import asyncio
-import pytest_asyncio
 
 from adega98.backend.core import utils
 from adega98.backend.models.users_model import User
 from adega98.backend.models.products_model import Product
 
 
-async def _register_products(delay: bool, user: User):
-    for i in range(10):
-        if i == 1 and delay: await asyncio.sleep(1)
-        await Product(
-            name=f"Test Product",
-            category="Tests",
-            brand="Testing",
-            barcode=f"0000001{i}",
-            description="This is a test product",
-            pack=2,
-            acquisition_price=0.99,
-            selling_price=1.99,
-            created_by=user
-        ).new(10)
-
-
-@pytest_asyncio.fixture
-async def register_products_delay(restart_database, user_instance: User):
-    user = await user_instance.new()
-    await _register_products(True, user)
-
-
-@pytest_asyncio.fixture
-async def register_products(restart_database, user_instance: User):
-    user = await user_instance.new()
-    await _register_products(False, user)
-
-
 @pytest.mark.asyncio
-async def test_product_new(restart_database, product_instance: Product):
+async def test_product_model_new(restart_database, product_instance: Product):
     prod = await product_instance.new(
         current_stock=1
     )
@@ -49,7 +19,7 @@ async def test_product_new(restart_database, product_instance: Product):
 
 
 @pytest.mark.asyncio
-async def test_product_get_by_id(register_products):
+async def test_product_model_get_by_id(register_products):
     prod0 = await Product.get_by_id(0)
     prod1 = await Product.get_by_id(1)
 
@@ -59,7 +29,7 @@ async def test_product_get_by_id(register_products):
 
 
 @pytest.mark.asyncio
-async def test_product_get_by_name(register_products_delay):
+async def test_product_model_get_by_name(register_products_delay):
     prods = await Product.get_by_name("Test Product")
 
     assert len(prods) == 10
@@ -72,7 +42,7 @@ async def test_product_get_by_name(register_products_delay):
 
 
 @pytest.mark.asyncio
-async def test_product_get_by_barcode(register_products):
+async def test_product_model_get_by_barcode(register_products):
     prod = await Product.get_by_barcode("00000010")
     prod_none = await Product.get_by_barcode("0")
 
@@ -81,7 +51,7 @@ async def test_product_get_by_barcode(register_products):
 
 
 @pytest.mark.asyncio
-async def test_product_get_by_category(register_products):
+async def test_product_model_get_by_category(register_products):
     prods = await Product.get_by_category("Tests")
     prods_none = await Product.get_by_category("Any")
 
@@ -90,7 +60,7 @@ async def test_product_get_by_category(register_products):
 
 
 @pytest.mark.asyncio
-async def test_product_get_by_brand(register_products):
+async def test_product_model_get_by_brand(register_products):
     prods = await Product.get_by_brand("Testing")
     prods_none = await Product.get_by_brand("Any")
 
@@ -98,7 +68,7 @@ async def test_product_get_by_brand(register_products):
     assert len(prods) == 10
 
 @pytest.mark.asyncio
-async def test_product_count(register_products, user_instance: User):
+async def test_product_model_count(register_products, user_instance: User):
     user = await user_instance.new()
     counter = await Product.count()
     assert counter == 10
@@ -120,7 +90,7 @@ async def test_product_count(register_products, user_instance: User):
 
 
 @pytest.mark.asyncio
-async def test_product_get_categories(register_products, user_instance: User):
+async def test_product_model_get_categories(register_products, user_instance: User):
     user = await user_instance.new()
 
     await Product(
@@ -143,7 +113,7 @@ async def test_product_get_categories(register_products, user_instance: User):
 
     
 @pytest.mark.asyncio
-async def test_product_get_brands(register_products, user_instance: User):
+async def test_product_model_get_brands(register_products, user_instance: User):
     user = await user_instance.new()
 
     await Product(
@@ -166,7 +136,7 @@ async def test_product_get_brands(register_products, user_instance: User):
 
 
 @pytest.mark.asyncio
-async def test_product_prefit_margin(restart_database, user_instance: User):
+async def test_product_model_prefit_margin(restart_database, user_instance: User):
     user = await user_instance.new()
     product = await Product(
         name=f"Test Product",

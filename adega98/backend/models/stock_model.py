@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import time
 from decimal import Decimal
-from typing import TYPE_CHECKING, overload, Literal
 from sqlalchemy import Integer, ForeignKey, Boolean, select
+from typing import TYPE_CHECKING, overload, Literal, ClassVar
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from . import Base
@@ -27,50 +27,23 @@ class Stock(Base):
     status: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     last_update: Mapped[int] = mapped_column(Integer, nullable=False)
     last_update_by: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    product: ClassVar[None|Product] = None
+
 
     # cria um novo estoque
-    async def new(self):
+    async def new(self, product: Product):
         self.last_update = int(time.time())
+        self.product = product
         return self
     
 
-    @overload
     @classmethod
-    async def get(cls, *where, scalar: Literal["one"]) -> Stock: ...
-
-    @overload
-    @classmethod
-    async def get(cls, *where, scalar: Literal["one_or_none"]) -> None|Stock: ...
-
-    @overload
-    @classmethod
-    async def get(cls, *where, scalar: Literal["first"]) -> None|Stock: ...
-
-    @overload
-    @classmethod
-    async def get(cls, *where, scalar: Literal["all"]) -> list[Stock]: ...
-
-    @classmethod
-    async def get(cls, *where, scalar: Literal["one", "one_or_none", "first", "all"]) -> None|Stock|list[Stock]:
+    async def get_by_id(cls, stock_id: int, product: Product) -> None|Stock:
         async with app.session_local() as db:
-            _select = select(Stock)
-            if where:
-                _select = _select.where(*where)
-            query = await db.execute(_select)
-            
-            if scalar == "all": return query.scalars().all()
-            elif scalar == "first": return query.scalars().first()
-            elif scalar == "one": return query.scalar_one()
-            elif scalar == "one_or_none": return query.scalar_one_or_none()
-    
-
-    # obtém um estoque pelo id
-    @classmethod
-    async def get_by_id(cls, stock_id: int) -> None|Stock:
-        return await cls.get(
-            Stock.stock_id == stock_id,
-            scalar="one_or_none"
-        )
+            query = await db.execute(select(cls).where(Stock.stock_id == stock_id))
+            stock = query.scalar_one_or_none()
+            stock.product = product
+            return stock
     
 
     @property
