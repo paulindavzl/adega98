@@ -40,4 +40,4 @@ app.set_lifespan(lifeaspan)
 
 
 def run():
-    uvicorn.run("test_app:app", reload=True)
+    uvicorn.run("dev_app:app", reload=True)

@@ -1,11 +1,13 @@
 from decimal import Decimal
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, Any
 
 ValidateStringReturn = Literal["not_string", "min_length_fail", "max_length_fail"]
+LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 
 class _UserTempType(TypedDict):
     user_id: int
     name: str
+
 
 class PartialProductData(TypedDict):
     product_id: int
@@ -67,3 +69,12 @@ class FullStockData(TypedDict):
     prefit_margin_percent: Decimal
 
 
+class HTTPErrorResponse(TypedDict):
+    status = "error"
+    error_name: str
+    cause: str
+    message: str
+    status_code: int
+    content: None|dict[str, Any]
+    log_id: None|int
+    log_level: LogLevel

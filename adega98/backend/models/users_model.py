@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import time
-from sqlalchemy import String, Integer, select
+from typing import Literal
+from decimal import Decimal
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Integer, select, Numeric
 
 from . import Base
 from ..core.application import Application
@@ -18,7 +20,11 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     whatsapp: Mapped[str] = mapped_column(String(11), nullable=False)
-    password: Mapped[str] = mapped_column(String(64), nullable=False)
+    password: Mapped[str] = mapped_column(String(64), nullable=True)
+    rule: Mapped[str] = mapped_column(String(6), nullable=False, default="client")
+    credit_limit: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)
+    interest_rate: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=True)
+    delay_fine: Mapped[Decimal] = mapped_column(Numeric(10,2), nullable=True)
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
 

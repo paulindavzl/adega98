@@ -68,11 +68,11 @@ class Application(fastapi.FastAPI):
 
 
     # obtém uma rota
-    def get_router(self, prefix: str) -> fastapi.APIRouter:
+    def get_router(self, prefix: str, depends: None|list[fastapi.Depends]=None) -> fastapi.APIRouter:
         """obtém uma instância para uma rota"""
         router = self.routers.get(prefix)
         if router is None:
-            router = fastapi.APIRouter(prefix=f"/{prefix}")
+            router = fastapi.APIRouter(prefix=f"/{prefix}", dependencies=depends)
             self.routers[prefix] = router
 
         return router
