@@ -105,5 +105,7 @@ async def test_logger_new_exception_logger_error_critical(log_path: str, restart
 
     assert await Logs.count() == 2
     assert error_log.message == ERROR
+    assert error_log.level == "ERROR"
     assert critical_log.message == CRITICAL
+    assert critical_log.level == "CRITICAL"
     assert len(logs_line) == 4
