@@ -55,9 +55,9 @@ class Logger(logging.Logger):
 
     # adiciona um novo log com base na exceção e pode adicionar no banco de dados
     async def new_exception_log(self, exc: Adega98Exceptions) -> None|Logs:
-        level = logging.getLevelName(exc.log_level)
+        level = exc.log_level
         super().log(
-            level, 
+            logging.getLevelName(level), 
             exc.message, 
             exc_info=(
                 type(exc),
