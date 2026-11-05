@@ -1,31 +1,42 @@
 import os
+import dotenv
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
 from . import utils
-from .constants import LOGS_PATH
 from ..models.logs_model import Logs
 from .exceptions import Adega98Exceptions
+from .constants import (
+    LOGS_PATH,
+    ENVFILE_PATH
+)
+
+
+dotenv.load_dotenv(ENVFILE_PATH)
+MODE = os.getenv("MODE")
+log_path = LOGS_PATH
+if MODE is not None and MODE != "prod":
+    log_path = os.path.join(LOGS_PATH, MODE)
 
 
 # classe responsável por gerenciar Logs
 class Logger(logging.Logger):
-    def __init__(self, name: str):
-        if not os.path.join(LOGS_PATH):
-            os.makedirs(LOGS_PATH, exist_ok=True)
+    def __init__(self, name: str, level: int=logging.INFO):
+        if not os.path.exists(log_path):
+            os.makedirs(log_path, exist_ok=True)
         
         super().__init__(name)
-        self.setLevel(logging.INFO)
+        self.setLevel(level)
         self.propagate = False
 
         self.set_handlers()
-
+        
     
     # define os handlers (se não existir)
     def set_handlers(self):
         if not self.handlers:
             handler = TimedRotatingFileHandler(
-                filename=os.path.join(LOGS_PATH, "adega98.log"),
+                filename=os.path.join(log_path, "adega98.log"),
                 when="midnight",
                 interval=1,
                 backupCount=7,
@@ -43,8 +54,8 @@ class Logger(logging.Logger):
 
 
     # adiciona um novo log com base na exceção e pode adicionar no banco de dados
-    async def new_log(self, exc: Adega98Exceptions) -> Logs:
-        level = exc.log_level
+    async def new_exception_log(self, exc: Adega98Exceptions) -> None|Logs:
+        level = logging.getLevelName(exc.log_level)
         super().log(
             level, 
             exc.message, 
@@ -55,12 +66,13 @@ class Logger(logging.Logger):
             ) if exc is not None else exc
         )
 
-        if level in ["ERROR", "CRITICAL"]:
+        # se o log for grave, salva no banco de dados para permitir consulta posteriormente
+        if exc.log_level in ["ERROR", "CRITICAL"]:
             log = Logs(
                 level = level,
                 logger_name = self.name,
                 message = exc.message,
-                timestamp = utils.get_datetime(exc.time),
+                timestamp = utils.get_datetime(exc.time).isoformat(),
                 user_id = exc.content.get("user_id"),
                 http_method = exc.content.get("http_method"),
                 http_path = exc.content.get("http_path"),

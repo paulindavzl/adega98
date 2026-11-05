@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import os
 import datetime as dt
 import zoneinfo as zi
 from decimal import Decimal
 from typing import TYPE_CHECKING, overload
+
+from .constants import LOGS_PATH
 
 if TYPE_CHECKING:
     from ..models.users_model import User
@@ -109,3 +112,13 @@ def decimal_to_str(v: float|Decimal) -> str:
 # formata um str para float (monetário)
 def str_to_decimal(v: str) -> Decimal:
     return Decimal(v.replace(",", "."))
+
+
+# limpa os logs (modo dev ou tests)
+def clean_logs(mode: str):
+    log_path = os.path.join(LOGS_PATH, mode)
+    if os.path.exists(log_path):
+        for log_file in os.listdir(log_path):
+            os.remove(os.path.join(log_path, log_file))
+        
+        os.rmdir(log_path)

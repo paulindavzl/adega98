@@ -1,6 +1,10 @@
+import dotenv
 import uvicorn
 import contextlib
 
+dotenv.set_key(".env", "MODE", "dev")
+
+from adega98.backend.core import utils
 from adega98.backend.models import Base
 from adega98.backend.models.users_model import User
 from adega98.backend.core.application import Application
@@ -21,6 +25,7 @@ async def create_user():
 
 @contextlib.asynccontextmanager
 async def lifeaspan(app: Application):
+    utils.clean_logs("dev")
     app.register_routers()
     app.init_db("database_test.db")
 
@@ -34,6 +39,8 @@ async def lifeaspan(app: Application):
 
     async with app.engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+    utils.clean_logs("dev")
 
 
 app.set_lifespan(lifeaspan)

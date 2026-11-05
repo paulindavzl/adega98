@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from sqlalchemy import Integer, String, select
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Integer, String, select, func
 
 from . import Base
 from ..core.application import Application
@@ -57,3 +57,19 @@ class Logs(Base):
         async with app.session_local() as db:
             query = await db.execute(select(cls).where(Logs.user_id == user_id))
             return query.scalars().all()
+
+
+    # obtém todos os logs
+    @classmethod
+    async def get_all(cls) -> list[Logs]:
+        async with app.session_local() as db:
+            query = await db.execute(select(cls))
+            return query.scalars().all()
+        
+    
+    # retorna a quantidade de logs no banco de dados
+    @classmethod
+    async def count(cls) -> int:
+        async with app.session_local() as db:
+            query = await db.execute(select(func.count()).select_from(cls))
+            return query.scalar()

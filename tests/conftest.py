@@ -1,6 +1,11 @@
+import dotenv
+import pytest
 import asyncio
 import pytest_asyncio
 
+dotenv.set_key(".env", "MODE", "tests")
+
+from adega98.backend.core import utils
 from adega98.backend.models import Base
 from adega98.backend.models.users_model import User
 from adega98.backend.core.application import Application
@@ -81,3 +86,8 @@ async def register_products_delay(restart_database, user_instance: User):
 async def register_products(restart_database, user_instance: User):
     user = await user_instance.new()
     await _register_products(False, user)
+
+
+@pytest.fixture
+def delete_logs():
+    utils.clean_logs("tests")

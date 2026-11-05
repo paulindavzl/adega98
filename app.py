@@ -1,5 +1,8 @@
+import dotenv
 import uvicorn
 import contextlib
+
+dotenv.set_key(".env", "MODE", "prod")
 
 from adega98.backend.core.application import Application
 

@@ -61,7 +61,7 @@ async def exception_handler(r: fastapi.Request, exc: Adega98Exceptions) -> fasta
         }
 
     logger = Logger(exc.module_name if _pe else "internal_error")
-    log = await logger.new_log(exc if _pe else Adega98Exceptions.convert(exc))
+    log = await logger.new_exception_log(exc if _pe else Adega98Exceptions.convert(exc))
     if log is not None:
         response["log_id"] = log.log_id
 

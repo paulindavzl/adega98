@@ -5,7 +5,7 @@ from .types import LogLevel
 
 
 class Adega98Exceptions(Exception):
-    error_name: str
+    error_name: str = "adega98_base_exceptions"
     cause: str
     message: str
     status_code: int
