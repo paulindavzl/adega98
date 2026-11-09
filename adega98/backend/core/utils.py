@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import logging
 import datetime as dt
 import zoneinfo as zi
 from decimal import Decimal
@@ -116,6 +117,7 @@ def str_to_decimal(v: str) -> Decimal:
 
 # limpa os logs (modo dev ou tests)
 def clean_logs(mode: str):
+    logging.shutdown()
     log_path = os.path.join(LOGS_PATH, mode)
     if os.path.exists(log_path):
         for log_file in os.listdir(log_path):

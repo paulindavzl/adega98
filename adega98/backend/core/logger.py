@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import dotenv
 import logging
@@ -82,7 +84,7 @@ class Logger(logging.Logger):
 
         # se o log for grave, salva no banco de dados para permitir consulta posteriormente
         if exc.log_level in ["ERROR", "CRITICAL"]:
-            log = Logs(
+            log = self.logs(
                 level = level,
                 logger_name = self.name,
                 message = exc.message,
