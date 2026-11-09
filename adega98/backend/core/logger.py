@@ -17,7 +17,6 @@ from .constants import (
 if TYPE_CHECKING:
     from ..models.logs_model import Logs
 
-
 dotenv.load_dotenv(ENVFILE_PATH)
 MODE = os.getenv("MODE")
 log_path = LOGS_PATH
@@ -52,7 +51,7 @@ class Logger(logging.Logger):
             )
 
             handler.setFormatter(logging.Formatter(
-                "$asctime | $levelname | $name | $message | $pathname:$module:$lineno ($funcName) | $process",
+                "$asctime | $levelname | $name | $message | $pathname:$module:$funcName (line: $lineno) | $process",
                 datefmt="%d/%m/%Y - %H:%M:%S",
                 style="$"
             ))

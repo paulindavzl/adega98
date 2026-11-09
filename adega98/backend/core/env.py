@@ -59,5 +59,6 @@ class Env:
         instance = cls._instance
         if instance is None:
             instance = Env()
+            cls._intance = instance
         
         return instance

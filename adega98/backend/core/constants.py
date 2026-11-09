@@ -9,7 +9,7 @@ JS_PATH = os.path.join(STATIC_PATH, "js")
 IMAGES_PATH = os.path.join(STATIC_PATH, "images")
 CSS_PATH = os.path.join(STATIC_PATH, "css")
 FONTS_PATH = os.path.join(STATIC_PATH, "fonts")
-LOGS_PATH = "/logs"
+LOGS_PATH = os.path.join("logs")
 
 # mensagens de erro
 ENVFILE_NOT_FOUND = "envfile not found"

@@ -25,7 +25,6 @@ async def create_user():
 
 @contextlib.asynccontextmanager
 async def lifeaspan(app: Application):
-    utils.clean_logs("dev")
     app.register_routers()
     app.init_db("database_test.db")
 
@@ -47,4 +46,5 @@ app.set_lifespan(lifeaspan)
 
 
 def run():
+    utils.clean_logs("dev")
     uvicorn.run("dev_app:app", reload=True)
