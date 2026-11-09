@@ -9,16 +9,16 @@ from sqlalchemy.orm import mapped_column, Mapped, ColumnProperty, InstrumentedAt
 from . import Base
 from ..core import utils
 from .users_model import User
-from .stock_model import Stock
+from .stock_model import Stock, logger as stock_logger
+from ..core.logger import Logger
 from ..core.application import Application
-from ..core.exceptions import ProductsDatabaseError
 from ..core.constants import (
-    INVALID_RETURNS_TYPE,
     MAX_LENGTH_PRODUCT_NAME,
 )
 
 
 app = Application.get_app()
+logger = Logger(__name__)
 
 
 class Product(Base):
@@ -68,6 +68,8 @@ class Product(Base):
             await db.refresh(stock)
             await self._set_stock_user()
                
+        logger.info(f"{self.name} (id: {self.product_id} - stock_id: {self.stock.stock_id}) product successfully registered by {self.user.name} (user id: {self.user.user_id})")
+        stock_logger.info(f"stock for {self.name} (product id: {self.product_id}) created successfully (id: {self.stock.stock_id})")
         return self
     
 

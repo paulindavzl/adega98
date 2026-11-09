@@ -51,3 +51,7 @@ class ProductsDatabaseError(Adega98Exceptions):
 
 class LogsDatabaseError(Adega98Exceptions):
     error_name = "logs_database_error"
+
+
+class LoggerError(Adega98Exceptions):
+    error_name = "logger_error"

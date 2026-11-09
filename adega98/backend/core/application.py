@@ -12,9 +12,11 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from .env import Env
+from .logger import Logger
 
 
 env = Env.get_env()
+logger = Logger(__name__)
 
 
 # classe que engloba aplicação e banco de dados
@@ -26,6 +28,7 @@ class Application(fastapi.FastAPI):
         self.routers: dict[str, fastapi.APIRouter] = {}
         self.templates = self.mount(templates="/templates")
         super().__init__()
+        logger.info("application started")
 
 
     # inicia o banco de dados
@@ -38,9 +41,12 @@ class Application(fastapi.FastAPI):
             expire_on_commit=False
         )
 
+        logger.info("database started")
+
 
     def set_lifespan(self, lifespan: None|_AsyncGeneratorContextManager=None):
         self.router.lifespan_context = lifespan
+        logger.info("lifespan defined")
         
 
     # renderiza um template
@@ -66,10 +72,11 @@ class Application(fastapi.FastAPI):
                 name=name
             )
 
+            logger.info(f"static route mounted in /{name} for {path}")
+
 
     # obtém uma rota
     def get_router(self, prefix: str, depends: None|list[fastapi.Depends]=None) -> fastapi.APIRouter:
-        """obtém uma instância para uma rota"""
         router = self.routers.get(prefix)
         if router is None:
             router = fastapi.APIRouter(prefix=f"/{prefix}", dependencies=depends)
@@ -80,8 +87,10 @@ class Application(fastapi.FastAPI):
 
     # registra uma rota
     def register_routers(self):
-        for router in self.routers.values():
+        for name, router in self.routers.items():
             self.include_router(router)
+
+            logger.info(f"/{name} route registered")
     
     
     @classmethod # obtém a versão global da aplicação

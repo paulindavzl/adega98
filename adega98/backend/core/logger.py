@@ -1,15 +1,19 @@
 import os
 import dotenv
 import logging
+from typing import TYPE_CHECKING
 from logging.handlers import TimedRotatingFileHandler
 
 from . import utils
-from ..models.logs_model import Logs
-from .exceptions import Adega98Exceptions
+from .exceptions import Adega98Exceptions, LoggerError
 from .constants import (
     LOGS_PATH,
-    ENVFILE_PATH
+    ENVFILE_PATH,
+    LOGS_NOT_DEFINED
 )
+
+if TYPE_CHECKING:
+    from ..models.logs_model import Logs
 
 
 dotenv.load_dotenv(ENVFILE_PATH)
@@ -21,13 +25,14 @@ if MODE is not None and MODE != "prod":
 
 # classe responsável por gerenciar Logs
 class Logger(logging.Logger):
-    def __init__(self, name: str, level: int=logging.INFO):
+    def __init__(self, name: str, level: int=logging.INFO, logs: None|Logs=None):
         if not os.path.exists(log_path):
             os.makedirs(log_path, exist_ok=True)
         
         super().__init__(name)
         self.setLevel(level)
         self.propagate = False
+        self.logs = logs
 
         self.set_handlers()
         
@@ -55,6 +60,15 @@ class Logger(logging.Logger):
 
     # adiciona um novo log com base na exceção e pode adicionar no banco de dados
     async def new_exception_log(self, exc: Adega98Exceptions) -> None|Logs:
+        if self.logs is None:
+            self.critical(LOGS_NOT_DEFINED)
+            raise LoggerError(
+                cause="logger_not_defined",
+                log_level="CRITICAL",
+                message=LOGS_NOT_DEFINED,
+                status_code=500
+            )
+        
         level = exc.log_level
         super().log(
             logging.getLevelName(level), 

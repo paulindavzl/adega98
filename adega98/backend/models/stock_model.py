@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, overload, Literal, ClassVar
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from . import Base
+from ..core.logger import Logger
 from ..core.application import Application
 
 if TYPE_CHECKING:
@@ -14,6 +15,7 @@ if TYPE_CHECKING:
 
 
 app = Application.get_app()
+logger = Logger(__name__)
 
 
 class Stock(Base):
@@ -34,6 +36,7 @@ class Stock(Base):
     async def new(self, product: Product):
         self.last_update = int(time.time())
         self.product = product
+
         return self
     
 

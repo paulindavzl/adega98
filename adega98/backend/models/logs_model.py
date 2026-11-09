@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String, select, func
 
 from . import Base
+from ..core.logger import Logger
 from ..core.application import Application
 from ..core.exceptions import Adega98Exceptions, LogsDatabaseError
 from ..core.constants import (
@@ -14,6 +15,7 @@ from ..core.constants import (
 
 
 app = Application.get_app()
+logger = Logger(__name__)
 
 
 class Logs(Base):
@@ -78,6 +80,7 @@ class Logs(Base):
             await db.commit()
             await db.refresh(self)
 
+            logger.info(f"log {self.level} registered in the database")
             return self
         
 

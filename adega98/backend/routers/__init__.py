@@ -2,6 +2,7 @@ import fastapi
 from typing import TYPE_CHECKING
 
 from ..core.logger import Logger
+from ..models.logs_model import Logs
 from ..core.application import Application
 from ..core.exceptions import Adega98Exceptions
 from ..core.constants import (
@@ -14,11 +15,12 @@ from ..core.constants import (
 )
 
 if TYPE_CHECKING:
-    from ..core.types import HTTPErrorResponse, LogLevel
-
+    from ..core.types import HTTPErrorResponse
 
 
 app = Application.get_app()
+logger = Logger(__name__)
+
 
 # monta rotas estáticas
 app.mount(
@@ -60,8 +62,11 @@ async def exception_handler(r: fastapi.Request, exc: Adega98Exceptions) -> fasta
             "status_code": 500
         }
 
-    logger = Logger(exc.module_name if _pe else "internal_error")
-    log = await logger.new_exception_log(exc if _pe else Adega98Exceptions.convert(exc))
+    _ll = logger.warning if _pe else logger.error
+    _ll(f"error captured (name: {response["error_name"]})")
+
+    handler_logger = Logger(exc.module_name if _pe else "internal_error", logs=Logs)
+    log = await handler_logger.new_exception_log(exc if _pe else Adega98Exceptions.convert(exc))
     if log is not None:
         response["log_id"] = log.log_id
 

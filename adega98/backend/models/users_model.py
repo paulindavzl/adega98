@@ -7,10 +7,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Integer, select, Numeric
 
 from . import Base
+from ..core.logger import Logger
 from ..core.application import Application
 
 
 app = Application.get_app()
+logger = Logger(__name__)
 
 
 class User(Base):
@@ -36,6 +38,7 @@ class User(Base):
             await db.commit()
             await db.refresh(self)
         
+        logger.info(f"user {self.name} ({self.rule}) created successfully (id: {self.user_id})")
         return self
     
 
