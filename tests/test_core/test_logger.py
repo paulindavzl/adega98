@@ -67,7 +67,7 @@ async def test_logger_new_exception_logger_info_warning(log_path: str, restart_d
         log_level="WARNING"
     )
 
-    logger = Logger(__name__)
+    logger = Logger(__name__, logs=Logs)
     await logger.new_exception_log(exc_info)
     await logger.new_exception_log(exc_warn)
 
@@ -95,7 +95,7 @@ async def test_logger_new_exception_logger_error_critical(log_path: str, restart
         log_level="CRITICAL"
     )
 
-    logger = Logger(__name__)
+    logger = Logger(__name__, logs=Logs)
     error_log = await logger.new_exception_log(exc_error)
     critical_log = await logger.new_exception_log(exc_critical)
 
