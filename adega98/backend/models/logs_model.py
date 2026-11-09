@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import traceback
+from typing import Any
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Integer, String, select, func
 
 from . import Base
 from ..core.application import Application
+from ..core.exceptions import Adega98Exceptions, LogsDatabaseError
+from ..core.constants import (
+    EXCEPTION_NOT_INTERNAL_BASE
+)
 
 
 app = Application.get_app()
@@ -20,17 +26,49 @@ class Logs(Base):
     message: Mapped[str] = mapped_column(String, nullable=False)
     timestamp: Mapped[str] = mapped_column(String, nullable=False)
 
+    # informações de exceções
+    exception_type: Mapped[str] = mapped_column(String, nullable=False)
+    exception_name: Mapped[str] = mapped_column(String, nullable=False)
+    exception_cause: Mapped[str] = mapped_column(String, nullable=False)
+    exception_traceback: Mapped[str] = mapped_column(String, nullable=False)
+    
     # informações http (opcionais)
     user_id: Mapped[int] = mapped_column(Integer, nullable=True)
     http_method: Mapped[str] = mapped_column(String, nullable=True)
     http_path: Mapped[str] = mapped_column(String, nullable=True)
     http_code: Mapped[int] = mapped_column(Integer, nullable=True)
 
-    # informações de exceções (opcionais)
-    exception_type: Mapped[str] = mapped_column(String, nullable=True)
-    exception_name: Mapped[str] = mapped_column(String, nullable=True)
-    exception_cause: Mapped[str] = mapped_column(String, nullable=True)
-    exception_traceback: Mapped[str] = mapped_column(String, nullable=True)
+
+    def __init__(self, exc: Adega98Exceptions, **kw):
+        def _if_has_set(k: str, ov: Any, o: dict[str, Any]) -> bool:
+            if k in kw.keys():
+                o[k] = ov[k]
+        
+        if not isinstance(exc, Adega98Exceptions):
+            err = LogsDatabaseError(
+                cause="exception_not_internal_base",
+                message=EXCEPTION_NOT_INTERNAL_BASE,
+                status_code=500,
+                log_level="CRITICAL"
+            )
+            _if_has_set("user_id", kw, err.content)
+            _if_has_set("http_method", kw, err.content)
+            _if_has_set("http_path", kw, err.content)
+            _if_has_set("http_code", kw, err.content)
+
+            raise err
+
+        # obtém as informações da exceção (apenas base Adega98Exception)
+        kw["exception_type"] = type(exc).__name__
+        kw["exception_name"] = exc.error_name
+        kw["exception_cause"] = exc.cause
+        kw["exception_traceback"] = "".join(traceback.format_exception(
+            type(exc),
+            exc,
+            exc.__traceback__
+        ))
+        
+        super().__init__(**kw)
 
 
     # adiciona um log no banco de dados

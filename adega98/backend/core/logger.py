@@ -77,9 +77,6 @@ class Logger(logging.Logger):
                 http_method = exc.content.get("http_method"),
                 http_path = exc.content.get("http_path"),
                 http_code = exc.status_code,
-                exception_type = type(exc).__name__,
-                exception_name = exc.error_name,
-                exception_cause = exc.cause,
-                exception_traceback = exc.__traceback__,
+                exc=exc
             )
             return await log.add()

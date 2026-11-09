@@ -19,6 +19,7 @@ ALREADY_EXISTING_PRODUCT = "this product, with the same name, purchase and sale 
 PRICE_GREATER_ZERO = "the price must be a number greater than zero"
 INVALID_LENGTH_NAME = "the name is too long or short"
 INTERNAL_ERROR = "an internon error occurred"
+EXCEPTION_NOT_INTERNAL_BASE = "the exception passed not an internal system base (Adega98Exception)"
 
 # valores
 MIN_LENGTH_PRODUCT_NAME = 3

@@ -47,3 +47,7 @@ class EnvError(Adega98Exceptions):
 
 class ProductsDatabaseError(Adega98Exceptions):
     error_name = "products_database_error"
+
+
+class LogsDatabaseError(Adega98Exceptions):
+    error_name = "logs_database_error"
