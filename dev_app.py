@@ -25,6 +25,7 @@ async def create_user():
 
 @contextlib.asynccontextmanager
 async def lifeaspan(app: Application):
+    images_pre_existents = utils.get_images_name()
     app.register_routers()
     app.init_db("database_test.db")
 
@@ -40,6 +41,11 @@ async def lifeaspan(app: Application):
         await conn.run_sync(Base.metadata.drop_all)
 
     utils.clean_logs("dev")
+    current_images_existents = utils.get_images_name()
+
+    for image in current_images_existents:
+        if image not in images_pre_existents:
+            utils.delete_image(image)
 
 
 app.set_lifespan(lifeaspan)

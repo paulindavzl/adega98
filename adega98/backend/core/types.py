@@ -78,3 +78,13 @@ class HTTPErrorResponse(TypedDict):
     content: None|dict[str, Any]
     log_id: None|int
     log_level: LogLevel
+
+
+class UpdateProductData(TypedDict):
+    name: str
+    category: str
+    brand: str
+    barcode: str
+    description: str
+    acquisition_price: float
+    selling_price: float

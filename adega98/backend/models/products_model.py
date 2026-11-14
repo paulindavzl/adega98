@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import time
 from decimal import Decimal
-from typing import Literal, overload, ClassVar
-from sqlalchemy import String, Integer, Numeric, select, func, ForeignKey 
+from collections import defaultdict
+from typing import Literal, overload, ClassVar, TYPE_CHECKING
+from sqlalchemy import String, Integer, Numeric, select, func, ForeignKey, update
 from sqlalchemy.orm import mapped_column, Mapped, ColumnProperty, InstrumentedAttribute 
 
 from . import Base
@@ -12,9 +13,14 @@ from .users_model import User
 from .stock_model import Stock, logger as stock_logger
 from ..core.logger import Logger
 from ..core.application import Application
+from ..core.exceptions import ProductsDatabaseError
 from ..core.constants import (
+    UNKNOWN_USER_UPDATER,
     MAX_LENGTH_PRODUCT_NAME,
 )
+
+if TYPE_CHECKING:
+    from ..core.types import UpdateProductData
 
 
 app = Application.get_app()
@@ -36,8 +42,8 @@ class Product(Base):
     selling_price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
 
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
-    image: Mapped[str] = mapped_column(String(255), nullable=False, default="/images/unknown-product.png")
-    created_by: Mapped[str] = mapped_column(ForeignKey("users.user_id"), nullable=False)
+    image: Mapped[str] = mapped_column(String(255), nullable=True)
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
 
     stock: ClassVar[None|Stock] = None
     user: ClassVar[None|User] = None
@@ -70,6 +76,63 @@ class Product(Base):
                
         logger.info(f"{self.name} (id: {self.product_id} - stock_id: {self.stock.stock_id}) product successfully registered by {self.user.name} (user id: {self.user.user_id})")
         stock_logger.info(f"stock for {self.name} (product id: {self.product_id}) created successfully (id: {self.stock.stock_id})")
+        return self
+
+
+    # atualiza o produto
+    @overload
+    async def update(
+        self,
+        user_id: int,
+        name: str|None,
+        category: str|None,
+        brand: str|None,
+        barcode: str|None,
+        description: str|None,
+        acquisition_price: float|None,
+        selling_price: float|None,
+        pack: int|None,
+        image: str|None,
+        current_stock: int|None,
+        minimum_stock: int|None,
+        maximum_stock: int|None
+    ) -> bool: ...
+
+    async def update(self, **pdata: UpdateProductData) -> Product:
+        user_id = pdata.get("user_id")
+        if user_id is None:
+            raise ProductsDatabaseError(
+                cause="unknown_user_updater",
+                message=UNKNOWN_USER_UPDATER,
+                status_code=422,
+                log_level="ERROR",
+                save_in_database=True,
+                content={
+                    "product_id": self.product_id
+                }
+            )
+        
+        updated = False
+        for k, v in pdata.items():
+            if hasattr(self, k):
+                if getattr(self, k) != v:
+                    setattr(self, k, v)
+                    updated = True
+            elif hasattr(self.stock, k):
+                if getattr(self.stock, k) != v:
+                    setattr(self, k, v)
+                    updated = True
+
+        if updated:
+            self.stock.last_update = int(time.time())
+            self.stock.last_update_by = user_id
+            async with app.session_local() as db:
+                db.add(self)
+                db.add(self.stock)
+                await db.commit()
+                await db.refresh(self)
+                await db.refresh(self.stock)
+                
         return self
     
 
@@ -127,7 +190,7 @@ class Product(Base):
             await User.get_by_id(self.created_by)
         )
         return self
-
+    
 
     @classmethod
     async def get_by_id(cls, product_id: int) -> None|Product:
@@ -183,28 +246,34 @@ class Product(Base):
             return query.scalar_one()
         
 
-    # retorna os valores de uma única coluna e quantas vezes ele repete
-    @classmethod
-    async def _get_columns_count(cls, column: InstrumentedAttribute) -> dict[str, int]:
-        async with app.session_local() as db:
-            query = await db.execute(select(column))
-            categories = query.scalars().all()
-            response = {}
-            for c in set(categories):
-                response[c] = categories.count(c)
-            return response
-        
-
     # retorna todas as categorias dos produtos
     @classmethod
-    async def get_categories(cls) -> dict[str, int]:
-        return await cls._get_columns_count(Product.category)
+    async def get_categories(cls) -> dict[str, dict[Literal["types", "units"], int]]:
+        products = await cls.get(scalar="all")
+        response = defaultdict(lambda: {"types": 0, "units": 0})
+        for product in products:
+            _cs = product.stock.current_stock
+            response["all"]["types"] += 1
+            response["all"]["units"] += _cs
+            response[product.category]["types"] += 1
+            response[product.category]["units"] += _cs
+
+        return dict(response)
         
 
     # retorna todas as marcas dos produtos
     @classmethod
-    async def get_brands(cls) -> dict[str, int]:
-        return await cls._get_columns_count(Product.brand)
+    async def get_brands(cls) -> dict[str, dict[Literal["types", "units"], int]]:
+        products = await cls.get(scalar="all")
+        response = defaultdict(lambda: {"types": 0, "units": 0})
+        for product in products:
+            _cs = product.stock.current_stock
+            response["all"]["types"] += 1
+            response["all"]["units"] += _cs
+            response[product.brand]["types"] += 1
+            response[product.brand]["units"] += _cs
+
+        return dict(response)
         
 
     # retorna a margem de lucro

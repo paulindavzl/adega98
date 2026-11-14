@@ -82,7 +82,7 @@ class Logger(logging.Logger):
         )
 
         # se o log for grave, salva no banco de dados para permitir consulta posteriormente
-        if exc.log_level in ["ERROR", "CRITICAL"]:
+        if exc.save_in_database and exc.log_level in ["ERROR", "CRITICAL"]:
             log = self.logs(
                 level = level,
                 logger_name = self.name,

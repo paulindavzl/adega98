@@ -1,5 +1,5 @@
 import time
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Literal
 
 from .types import LogLevel
 
@@ -11,16 +11,18 @@ class Adega98Exceptions(Exception):
     status_code: int
     content: dict[str, Any]
     log_level: None|LogLevel
+    save_in_database: bool
     module_name: str
     time: int
 
-    def __init__(self, cause: str, message: str, status_code: None|int=None, content: dict[str, Any]={}, log_level: None|LogLevel=None):
+    def __init__(self, cause: str, message: str, status_code: None|int=None, content: dict[str, Any]={}, log_level: None|LogLevel=None, save_in_database: bool=True):
         self.cause = cause
         self.message = message
         self.content = content
         self.log_level = log_level
         self.module_name = __name__
         self.time = int(time.time())
+        self.save_in_database = save_in_database
         if status_code:
             self.status_code = status_code
 
@@ -55,3 +57,7 @@ class LogsDatabaseError(Adega98Exceptions):
 
 class LoggerError(Adega98Exceptions):
     error_name = "logger_error"
+
+
+class ProductRouterError(Adega98Exceptions):
+    error_name = "product_router_error"
