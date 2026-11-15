@@ -106,10 +106,11 @@ async def test_product_model_get_categories(register_products, user_instance: Us
     ).new(0)
 
     categories = await Product.get_categories()
-    assert "Tests" in categories.keys()
-    assert "Tests2" in categories.keys()
-    assert categories.get("Tests") == 10
-    assert categories.get("Tests2") == 1
+    c_all, c_testing, c_testing2 = categories.get("all"), categories.get("Tests"), categories.get("Tests2")
+    assert all((c_all, c_testing, c_testing2))
+    assert c_all["types"] == 11 and c_all["units"] == 100
+    assert c_testing["types"] == 10 and c_testing["units"] == 100
+    assert c_testing2["types"] == 1 and c_testing2["units"] == 0
 
     
 @pytest.mark.asyncio
@@ -131,8 +132,11 @@ async def test_product_model_get_brands(register_products, user_instance: User):
     brands = await Product.get_brands()
     assert "Testing" in brands.keys()
     assert "Testing2" in brands.keys()
-    assert brands.get("Testing") == 10
-    assert brands.get("Testing2") == 1
+    b_all, b_testing, b_testing2 = brands.get("all"), brands.get("Testing"), brands.get("Testing2")
+    assert all((b_all, b_testing, b_testing2))
+    assert b_all["types"] == 11 and b_all["units"] == 100
+    assert b_testing["types"] == 10 and b_testing["units"] == 100
+    assert b_testing2["types"] == 1 and b_testing2["units"] == 0
 
 
 @pytest.mark.asyncio
