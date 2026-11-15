@@ -91,3 +91,7 @@ async def register_products(restart_database, user_instance: User):
 @pytest.fixture
 def delete_logs():
     utils.clean_logs("tests")
+
+
+def pytest_sessionfinish(session, exitstatus):
+    utils.clean_logs("tests")

@@ -17,7 +17,7 @@ from .constants import (
 if TYPE_CHECKING:
     from ..models.logs_model import Logs
 
-dotenv.load_dotenv(ENVFILE_PATH)
+dotenv.load_dotenv(ENVFILE_PATH, override=True)
 MODE = os.getenv("MODE")
 log_path = LOGS_PATH
 if MODE is not None and MODE != "prod":

@@ -35,7 +35,7 @@ class Env:
                 message=ENVFILE_NOT_FOUND
             )
         
-        dotenv.load_dotenv(ENVFILE_PATH) # carrega o arquivo
+        dotenv.load_dotenv(ENVFILE_PATH, override=True) # carrega o arquivo
         logger.info("envfile loaded")
 
         # carrega as variáveis de ambiente pré-definidas
